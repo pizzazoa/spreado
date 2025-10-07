@@ -1,0 +1,17 @@
+
+build/
+out/
+bin/
+.gradle/
+.env
+application-*.yml
+
+# IDE, OS 설정
+*.iml
+.idea/
+.vscode/
+.classpath
+**/.DS_Store
+
+# 포함돼야 하는 것들
+!gradle/wrapper/gradle-wrapper.jar
