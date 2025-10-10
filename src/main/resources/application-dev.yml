@@ -1,0 +1,22 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: ${DB_URL}         # 예: jdbc:postgresql://<host>:5432/postgres?sslmode=require
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: validate
+    show-sql: false
+
+logging.level.org.hibernate.sql: debug
+
+supabase:
+  url: ${SUPABASE_URL}
+  anon-key: ${SUPABASE_ANON_KEY}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
