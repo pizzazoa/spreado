@@ -4,7 +4,6 @@ out/
 bin/
 .gradle/
 .env
-application-*.yml
 
 # IDE, OS 설정
 *.iml
