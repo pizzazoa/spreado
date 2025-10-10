@@ -1,5 +1,6 @@
 spring:
   config:
+    import: optional:file:.env[.properties]
     activate:
       on-profile: local
 
@@ -7,6 +8,7 @@ spring:
     url: ${DB_URL}         # 예: jdbc:postgresql://<host>:5432/postgres?sslmode=require
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     properties:
