@@ -10,3 +10,10 @@ spring:
       hibernate:
         format_sql: true
     show-sql: true
+
+  flyway:
+    enabled: true        # 기본 true
+    locations: classpath:db
+    baseline-on-migrate: true   # 기존 DB 위에 적용할 때 유용
+    validate-on-migrate: true
+    baseline-version: 0
