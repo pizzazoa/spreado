@@ -23,4 +23,4 @@ supabase:
 
 springdoc:
   api-docs:
-    enabled: true
+    enabled: false
