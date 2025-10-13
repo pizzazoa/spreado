@@ -17,3 +17,9 @@ spring:
     baseline-on-migrate: true   # 기존 DB 위에 적용할 때 유용
     validate-on-migrate: true
     baseline-version: 0
+
+springdoc:
+  api-docs:
+    enabled: false   # 공통: 기본 꺼두기(운영 안전)
+  swagger-ui:
+    path: /swagger-ui.html
