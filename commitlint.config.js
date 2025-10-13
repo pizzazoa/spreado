@@ -14,13 +14,15 @@ module.exports = {
             "revert"
         ]],
         "scope-enum": [2, "always", [
+            "auth",
             "user",
-            "dex",
-            "coll",
-            "map",
-            "entity",
+            "group",
+            "meeting",
+            "ai",
+            "notify",
             "infra",
-            "db"
+            "db",
+            "global"
         ]],
         "footer-empty": [2, "always"],
         "subject-case": [0]
@@ -94,26 +96,32 @@ module.exports = {
             scope: {
                 description: '[Scope] 이번 변경이 적용된 범위를 선택해주세요 (범위 생략하려면 empty 선택)',
                 enum: {
+                    auth: {
+                        description: '🔐 인증/인가 도메인 (예: OAuth2, JWT, 세션)'
+                    },
                     user: {
-                        description: '🙋‍♂️ 사용자 기능 (예: 로그인, 프로필 수정)'
+                        description: '🙋‍♂️ 사용자 도메인 (예: 프로필, 내 정보)'
                     },
-                    note: {
-                        description: '📘 도감 기능 (예: 새 목록 조회, 새 스크랩)'
+                    group: {
+                        description: '👥 그룹 도메인 (예: 생성, 초대, 역할 배정)'
                     },
-                    coll: {
-                        description: '🗂️ 컬렉션 기능 (예: 컬렉션 등록, 수정)'
+                    meeting: {
+                        description: '📝 회의 도메인 (예: 생성, 상태 변경)'
                     },
-                    map: {
-                        description: '🗺️ 지도 기능 (예: 주변 버드스팟 조회)'
+                    ai: {
+                        description: '🤖 AI 처리 (요약, 마일스톤/투두 생성)'
                     },
-                    entity: {
-                        description: '🏗️ 엔티티 구조 변경 (예: 필드 추가, 매핑 수정)'
+                    notify: {
+                        description: '📧 알림/이메일 전송 (NotificationService, EmailSender)'
                     },
                     infra: {
-                        description: '🛠️ 설정/인프라 관련 변경 (예: 스크립트, 환경 설정)'
+                        description: '🛠️ 설정/인프라 (예: 스크립트, 환경 설정, 배포 설정)'
                     },
                     db: {
-                        description: '🗄️ DB 관련 변경 (예: Flyway 마이그레이션 추가)'
+                        description: '🗄️ DB/마이그레이션 (예: Flyway, 스키마 변경)'
+                    },
+                    global: {
+                        description: '🌎 global 폴더 설정 (config, shared, README 등 변경)'
                     }
                 }
             },
