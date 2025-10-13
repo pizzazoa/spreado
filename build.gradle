@@ -34,6 +34,10 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// flyway 마이그레이션 의존성 추가
+	implementation 'org.flywaydb:flyway-core'
+
 }
 
 tasks.named('test') {
