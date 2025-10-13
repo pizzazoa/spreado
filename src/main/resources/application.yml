@@ -13,9 +13,8 @@ spring:
 
   flyway:
     enabled: true        # 기본 true
-    locations: classpath:db
+    locations: classpath:db/migration
     baseline-on-migrate: true   # 기존 DB 위에 적용할 때 유용
-    validate-on-migrate: true
     baseline-version: 0
 
 springdoc:
