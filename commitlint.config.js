@@ -17,6 +17,7 @@ module.exports = {
             "auth",
             "user",
             "group",
+            "archive",
             "meeting",
             "ai",
             "notify",
@@ -104,6 +105,9 @@ module.exports = {
                     },
                     group: {
                         description: '👥 그룹 도메인 (예: 생성, 초대, 역할 배정)'
+                    },
+                    archive:{
+                        description: '📚 자료실 도메인 (예: 자료 저장, 다운로드)'
                     },
                     meeting: {
                         description: '📝 회의 도메인 (예: 생성, 상태 변경)'
