@@ -43,6 +43,11 @@ dependencies {
 	// spring security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+    // Auth, Jwt 관련 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'com.auth0:java-jwt:4.5.0'
+
 }
 
 tasks.named('test') {

@@ -1,0 +1,41 @@
+package com.example.spreado.domain.user.core.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.OffsetDateTime;
+
+@Entity
+@Table(name = "users")
+@Getter
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Setter
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "name")
+    @Setter
+    private String name;
+
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
+
+    @Column(name = "refresh_token")
+    @Setter
+    private String refreshToken;
+
+    public static User createUser(String email) {
+        User user = new User();
+        user.email = email;
+        user.createdAt = OffsetDateTime.now();
+        return user;
+    }
+}
