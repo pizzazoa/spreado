@@ -1,21 +1,22 @@
 package com.example.spreado.global.security;
 
-import com.example.spreado.domain.auth.api.dto.AuthTokensResponse;
 import com.example.spreado.domain.user.application.UserService;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.global.security.token.AccessTokenProvider;
 import com.example.spreado.global.security.token.RefreshTokenPair;
 import com.example.spreado.global.security.token.RefreshTokenProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserService userService;
     private final AccessTokenProvider accessTokenProvider;
     private final RefreshTokenProvider refreshTokenProvider;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 프론트엔드 리디렉션 주소 (환경에 따라 다름)
+    @Value("${FRONT_REDIRECT_URL}")
+    private String frontRedirectUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -45,10 +49,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 보안상 raw token은 클라이언트에게만 반환
         userService.storeHashedRefreshToken(user.getId(), refreshPair.hashed());
 
-        // 응답 작성
-        AuthTokensResponse tokens = new AuthTokensResponse(accessToken, refreshPair.raw());
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(tokens));
+        // URL 인코딩
+        String encodedAccess = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        String encodedRefresh = URLEncoder.encode(refreshPair.raw(), StandardCharsets.UTF_8);
+
+        // 프론트로 리디렉션
+        String redirectUrl = String.format("%s?access=%s&refresh=%s",
+                frontRedirectUrl, encodedAccess, encodedRefresh);
+
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }
 
