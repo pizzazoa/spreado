@@ -25,11 +25,6 @@ public class UserService {
         return user;
     }
 
-    @Transactional
-    public void storeHashedRefreshToken(Long id, String hashed) {
-        userRepository.storeHashedRefreshToken(id, hashed);
-    }
-
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));

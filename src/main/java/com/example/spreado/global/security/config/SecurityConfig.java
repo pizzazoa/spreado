@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(401);
                             response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            response.getWriter().write("{\"status\":401,\"message\":\"Unauthorized\"}");
                         })
                 )
                 .oauth2Login(oauth2 -> oauth2

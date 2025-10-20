@@ -1,5 +1,6 @@
 package com.example.spreado.global.security;
 
+import com.example.spreado.domain.auth.application.TokenRefreshService;
 import com.example.spreado.domain.user.application.UserService;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.global.security.token.AccessTokenProvider;
@@ -25,6 +26,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserService userService;
     private final AccessTokenProvider accessTokenProvider;
     private final RefreshTokenProvider refreshTokenProvider;
+    private final TokenRefreshService tokenRefreshService;
 
     // 프론트엔드 리디렉션 주소 (환경에 따라 다름)
     @Value("${FRONT_REDIRECT_URL}")
@@ -47,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // hashed RefreshToken DB 저장
         // 보안상 raw token은 클라이언트에게만 반환
-        userService.storeHashedRefreshToken(user.getId(), refreshPair.hashed());
+        tokenRefreshService.saveUserRefreshToken(user.getId(), refreshPair.hashed());
 
         // URL 인코딩
         String encodedAccess = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
