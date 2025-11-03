@@ -28,10 +28,6 @@ public class User {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @Column(name = "refresh_token")
-    @Setter
-    private String refreshToken;
-
     public static User createUser(String email) {
         User user = new User();
         user.email = email;

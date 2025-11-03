@@ -11,6 +11,6 @@ public class ErrorResponse {
     @Schema(description = "HTTP 상태 코드", example = "500")
     private final int status;
 
-    @Schema(description = "에러 메시지", example = "도감 조회 결과가 비어 있습니다. 서버 상태를 점검하세요.")
+    @Schema(description = "에러 메시지")
     private final String message;
 }
