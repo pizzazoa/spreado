@@ -15,7 +15,7 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: "local"
-      DB_URL: ${DB_URL:-jdbc:postgresql://host.docker.internal:5432/spreado}
+      DB_URL: ${DB_URL_DOCKER:-jdbc:postgresql://host.docker.internal:5432/spreado}
       JAVA_OPTS: >-
         -Duser.timezone=Asia/Seoul
         -XX:MaxRAMPercentage=60

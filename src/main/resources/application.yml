@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: classpath:global/domain.yml
+
   application:
     name: spreado
 
