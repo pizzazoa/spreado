@@ -1,6 +1,7 @@
 spring:
   config:
-    import: classpath:global/domain.yml
+    import: classpath:static/domain.yml,
+            classpath:templates/prompts.yml
 
   application:
     name: spreado
@@ -25,3 +26,8 @@ springdoc:
     enabled: false   # 공통: 기본 꺼두기(운영 안전)
   swagger-ui:
     path: /swagger-ui.html
+
+ai:
+  url: ${SUMMARY_AI_URL:}
+  api-key: ${SUMMARY_AI_API_KEY:}
+  model: ${SUMMARY_AI_MODEL:gpt-4o-mini}
