@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/user/**",
                                 "/group/**",
-                                "/meeting/**"
+                                "/meeting/**",
+                                "/note/**"
                         ).permitAll()
                         // 그 외는 기존 정책대로
                         .anyRequest().authenticated()

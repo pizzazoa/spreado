@@ -2,12 +2,9 @@ package com.example.spreado.domain.meeting.api;
 
 import com.example.spreado.domain.group.api.dto.response.GroupJoinResponse;
 import com.example.spreado.domain.meeting.api.dto.request.MeetingCreateRequest;
-import com.example.spreado.domain.meeting.api.dto.request.MeetingJoinRequest;
-import com.example.spreado.domain.meeting.api.dto.response.MeetingCreateResponse;
-import com.example.spreado.domain.meeting.api.dto.response.MeetingDetailResponse;
-import com.example.spreado.domain.meeting.api.dto.response.MeetingJoinResponse;
-import com.example.spreado.domain.meeting.api.dto.response.MeetingSummaryResponse;
+import com.example.spreado.domain.meeting.api.dto.response.*;
 import com.example.spreado.domain.meeting.application.MeetingService;
+import com.example.spreado.domain.note.api.dto.response.NoteResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -77,7 +74,7 @@ public class MeetingController {
         return meetingService.createMeeting(request, userId);
     }
 
-    @PostMapping("/join")
+    @PostMapping("/{meetingId}/join")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "회의 참여",
@@ -89,9 +86,9 @@ public class MeetingController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
             @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없음", content = @Content)
     })
-    public MeetingJoinResponse joinMeeting(@Valid @RequestBody MeetingJoinRequest request, Authentication authentication) {
+    public MeetingJoinResponse joinMeeting(@PathVariable Long meetingId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        return meetingService.joinMeeting(request, userId);
+        return meetingService.joinMeeting(meetingId, userId);
     }
 
     @PostMapping("/{meetingId}/leave")
@@ -109,5 +106,38 @@ public class MeetingController {
     public void leaveMeeting(@PathVariable Long meetingId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         meetingService.leaveMeeting(meetingId, userId);
+    }
+
+    @PostMapping("/{meetingId}/end")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "회의 종료",
+            description = "회의를 종료합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회의 종료 성공", content = @Content(schema = @Schema(implementation = NoteResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없음", content = @Content)
+    })
+    public NoteResponse endMeeting(@PathVariable Long meetingId, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return meetingService.endMeeting(meetingId, userId);
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "내 회의 목록 조회",
+            description = "현재 참여 중인 회의 목록을 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MeetingMemberResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content)
+    })
+    public List<MeetingSummaryResponse> getMyMeetings(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return meetingService.getMyMeetings(userId);
     }
 }

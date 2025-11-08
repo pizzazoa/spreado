@@ -56,4 +56,14 @@ public class MeetingJoinRepository {
                 .setParameter("meetingId", meetingId)
                 .getResultList();
     }
+
+    public List<MeetingJoin> findAllByUserId(Long userId) {
+        return em.createQuery("""
+                        SELECT mj FROM MeetingJoin mj
+                        JOIN FETCH mj.meeting m
+                        WHERE mj.user.id = :userId
+                        """, MeetingJoin.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
 }

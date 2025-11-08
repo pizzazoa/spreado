@@ -55,4 +55,9 @@ public class Meeting {
         meeting.title = title;
         return meeting;
     }
+
+    public void endMeeting() {
+        this.status = MeetingStatus.ENDED;
+        this.endedAt = LocalDateTime.now();
+    }
 }
