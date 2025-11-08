@@ -1,5 +1,6 @@
 package com.example.spreado.global.security.config;
 
+import com.example.spreado.global.security.JwtAuthenticationFilter;
 import com.example.spreado.global.security.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,7 +36,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/auth/**",
                                 "/oauth2/**",
-                                "/user/**"
+                                "/user/**",
+                                "/group/**",
+                                "/meeting/**"
                         ).permitAll()
                         // 그 외는 기존 정책대로
                         .anyRequest().authenticated()
