@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -39,10 +40,9 @@ public class UserRepository {
                 .findFirst();
     }
 
-    public void storeHashedRefreshToken(Long id, String hashed) {
-        em.createQuery("UPDATE User u SET u.refreshToken = :hashed WHERE u.id = :id")
-                .setParameter("hashed", hashed)
-                .setParameter("id", id)
-                .executeUpdate();
+    public List<User> findAllByIds(List<Long> ids) {
+        return em.createQuery("SELECT u FROM User u WHERE u.id IN :ids", User.class)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 }

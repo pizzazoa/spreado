@@ -1,5 +1,6 @@
 package com.example.spreado.global.security.config;
 
+import com.example.spreado.global.security.JwtAuthenticationFilter;
 import com.example.spreado.global.security.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -20,6 +22,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,7 +37,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/auth/**",
                                 "/oauth2/**",
-                                "/user/**"
+                                "/user/**",
+                                "/group/**",
+                                "/meeting/**",
+                                "/note/**"
                         ).permitAll()
                         // 그 외는 기존 정책대로
                         .anyRequest().authenticated()
@@ -48,6 +54,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessHandler))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                         .build();
     }
 
