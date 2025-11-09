@@ -1,0 +1,50 @@
+{
+  "liveblocksType": "LiveObject",
+  "data": {
+    "doc": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": { "level": 1 },
+          "content": [{ "type": "text", "text": "2025-11-12 디자인 리뷰 회의" }]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "신규 대시보드 가독성 개선: 글자 크기 및 컬러 대비 조정 후 시안 재제작" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "버튼 위치/정렬 일관성 확보 및 반응형 레이아웃 재검토" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "프로토타입 테스트 피드백 반영: 첫 진입 화면에 핵심 기능 버튼 명확히 배치" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "새 컬러 팔레트 적용 일정 이번 주 목요일까지 확정" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "디자인 시스템 문서 업데이트 및 공유 드라이브 업로드" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
