@@ -1,5 +1,6 @@
 package com.example.spreado.domain.summary.application;
 
+import com.example.spreado.domain.meeting.core.repository.MeetingJoinRepository;
 import com.example.spreado.domain.note.core.entity.Note;
 import com.example.spreado.domain.note.core.repository.NoteRepository;
 import com.example.spreado.domain.summary.application.client.AiClient;
@@ -10,13 +11,14 @@ import com.example.spreado.domain.summary.core.entity.Summary;
 import com.example.spreado.global.shared.exception.BadRequestException;
 import com.example.spreado.global.shared.exception.NotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class SummaryService {
 
     private final NoteRepository noteRepository;
     private final SummaryRepository summaryRepository;
+    private final MeetingJoinRepository meetingJoinRepository;
     private final SummaryDocumentPreprocessor documentPreprocessor;
     private final PromptService promptService;
     private final AiClient aiClient;
@@ -40,15 +43,22 @@ public class SummaryService {
         }
 
         String prompt = promptService.buildSummaryPrompt(plainText);
-        String rawResponse = aiClient.requestSummary(prompt);
-        String normalizedJson = normalizeResponse(rawResponse);
 
-        return summaryRepository.findByNoteId(noteId)
-                .map(existing -> {
-                    existing.updateSummaryJson(normalizedJson);
-                    return SummaryResponse.from(existing);
-                })
-                .orElseGet(() -> SummaryResponse.from(summaryRepository.save(Summary.create(note, normalizedJson))));
+        try {
+            var summaryDto = aiClient.requestSummary(prompt);
+            String summaryJson = convertToJson(summaryDto);
+
+            return summaryRepository.findByNoteId(noteId)
+                    .map(existing -> {
+                        existing.updateSummaryJson(summaryJson);
+                        return SummaryResponse.from(existing);
+                    })
+                    .orElseGet(() -> SummaryResponse.from(summaryRepository.save(Summary.create(note, summaryJson))));
+        } catch (Exception e) {
+            log.error("요약 생성 중 오류 발생 - noteId: {}, errorType: {}, errorMessage: {}",
+                    noteId, e.getClass().getName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     public SummaryResponse getSummary(Long noteId) {
@@ -77,22 +87,13 @@ public class SummaryService {
 
 
     // 헬퍼 메서드
-    private String normalizeResponse(String response) {
-        if (!StringUtils.hasText(response)) {
-            throw new BadRequestException("AI 응답이 비어 있습니다.");
-        }
-
-        String trimmed = response.trim();
-        if (trimmed.startsWith("```")) {
-            trimmed = trimmed.replaceFirst("^```(?:json)?\\s*", "");
-            trimmed = trimmed.replaceFirst("\\s*```$", "");
-        }
-
+    private String convertToJson(Object dto) {
         try {
-            JsonNode jsonNode = objectMapper.readTree(trimmed);
-            return objectMapper.writeValueAsString(jsonNode);
+            return objectMapper.writeValueAsString(dto);
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("AI 응답이 JSON 형식이 아닙니다.");
+            log.error("요약 데이터 JSON 변환 실패 - dtoType: {}, errorMessage: {}",
+                    dto.getClass().getName(), e.getMessage(), e);
+            throw new IllegalStateException("요약 데이터를 JSON으로 변환하는 중 오류가 발생했습니다.", e);
         }
     }
 }

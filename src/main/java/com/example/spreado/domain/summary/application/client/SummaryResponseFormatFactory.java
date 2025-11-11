@@ -1,83 +1,97 @@
 package com.example.spreado.domain.summary.application.client;
 
+import com.openai.core.JsonValue;
+import com.openai.models.responses.ResponseFormatTextConfig;
+import com.openai.models.responses.ResponseFormatTextJsonSchemaConfig;
+import com.openai.models.responses.ResponseTextConfig;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class SummaryResponseFormatFactory {
 
-    private final Map<String, Object> cachedFormat = Collections.unmodifiableMap(buildResponseFormat());
+    private static final String SCHEMA_NAME = "meeting_summary";
+    private static final List<String> REQUIRED_FIELDS = List.of("summary", "milestones", "actionItemsByRole");
+    private static final List<String> ROLE_TYPES = List.of("PM", "PD", "FE", "BE", "AI", "ALL");
 
-    public Map<String, Object> getResponseFormat() {
+    private final ResponseTextConfig cachedFormat = buildResponseFormat();
+
+    public ResponseTextConfig getResponseTextConfig() {
         return cachedFormat;
     }
 
-    private Map<String, Object> buildResponseFormat() {
-        Map<String, Object> format = new HashMap<>();
-        format.put("type", "json_schema");
+    private ResponseTextConfig buildResponseFormat() {
+        Map<String, Object> rootSchema = buildRootSchema();
 
-        Map<String, Object> jsonSchema = new HashMap<>();
-        jsonSchema.put("name", "meeting_summary");
-        jsonSchema.put("schema", buildRootSchema());
-        format.put("json_schema", jsonSchema);
+        ResponseFormatTextJsonSchemaConfig jsonSchema = ResponseFormatTextJsonSchemaConfig.builder()
+                .name(SCHEMA_NAME)
+                .schema(ResponseFormatTextJsonSchemaConfig.Schema.builder()
+                        .additionalProperties(toJsonValueMap(rootSchema))
+                        .build())
+                .strict(true)
+                .build();
 
-        return format;
+        return ResponseTextConfig.builder()
+                .format(ResponseFormatTextConfig.ofJsonSchema(jsonSchema))
+                .build();
     }
 
     private Map<String, Object> buildRootSchema() {
-        Map<String, Object> schema = new HashMap<>();
-        schema.put("type", "object");
-        schema.put("additionalProperties", false);
-        schema.put("required", List.of("summary", "milestones", "actionItemsByRole"));
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("summary", Map.of("type", "string"));
-        properties.put("milestones", buildMilestoneSchema());
-        properties.put("actionItemsByRole", buildActionItemsSchema());
-
-        schema.put("properties", properties);
-        return schema;
+        return Map.of(
+                "type", "object",
+                "additionalProperties", false,
+                "required", REQUIRED_FIELDS,
+                "properties", Map.of(
+                        "summary", Map.of("type", "string"),
+                        "milestones", buildMilestoneSchema(),
+                        "actionItemsByRole", buildActionItemsSchema()
+                )
+        );
     }
 
     private Map<String, Object> buildMilestoneSchema() {
-        Map<String, Object> milestoneSchema = new HashMap<>();
-        milestoneSchema.put("type", "array");
-        milestoneSchema.put("default", List.of());
-
-        Map<String, Object> milestoneItem = new HashMap<>();
-        milestoneItem.put("type", "object");
-        milestoneItem.put("additionalProperties", false);
-        milestoneItem.put("required", List.of("task", "deadline"));
-        milestoneItem.put("properties", Map.of(
-                "task", Map.of("type", "string"),
-                "deadline", Map.of("type", "string")
-        ));
-
-        milestoneSchema.put("items", milestoneItem);
-        return milestoneSchema;
+        return Map.of(
+                "type", "array",
+                "default", List.of(),
+                "items", Map.of(
+                        "type", "object",
+                        "additionalProperties", false,
+                        "required", List.of("task", "deadline"),
+                        "properties", Map.of(
+                                "task", Map.of("type", "string"),
+                                "deadline", Map.of("type", "string")
+                        )
+                )
+        );
     }
 
     private Map<String, Object> buildActionItemsSchema() {
-        Map<String, Object> schema = new HashMap<>();
-        schema.put("type", "object");
-        schema.put("additionalProperties", false);
+        Map<String, Map<String, Object>> roleProperties = ROLE_TYPES.stream()
+                .collect(Collectors.toMap(
+                        role -> role,
+                        role -> Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "default", List.of()
+                        )
+                ));
 
-        Map<String, Object> roleProperties = new HashMap<>();
-        List<String> roles = List.of("PM", "PD", "FE", "BE", "AI", "ALL");
-        for (String role : roles) {
-            roleProperties.put(role, Map.of(
-                    "type", "array",
-                    "items", Map.of("type", "string"),
-                    "default", List.of()
-            ));
-        }
+        return Map.of(
+                "type", "object",
+                "additionalProperties", false,
+                "properties", roleProperties,
+                "required", ROLE_TYPES
+        );
+    }
 
-        schema.put("properties", roleProperties);
-        schema.put("required", roles);
-        return schema;
+    private Map<String, JsonValue> toJsonValueMap(Map<String, Object> source) {
+        return source.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        Map.Entry::getKey,
+                        entry -> JsonValue.from(entry.getValue())
+                ));
     }
 }
