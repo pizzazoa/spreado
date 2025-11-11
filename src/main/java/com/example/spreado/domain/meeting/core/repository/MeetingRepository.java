@@ -31,11 +31,4 @@ public class MeetingRepository {
                 .setParameter("id", id)
                 .getResultList();
     }
-
-    public void setMeetingLink(Long meetingId, String meetingLink) {
-        em.createQuery("UPDATE Meeting m SET m.meetingLink = :meetingLink WHERE m.id = :meetingId")
-                .setParameter("meetingLink", meetingLink)
-                .setParameter("meetingId", meetingId)
-                .executeUpdate();
-    }
 }
