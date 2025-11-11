@@ -30,9 +30,6 @@ public class Meeting {
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(name = "meeting_link", columnDefinition = "TEXT")
-    private String meetingLink;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MeetingStatus status = MeetingStatus.ONGOING;
@@ -48,7 +45,7 @@ public class Meeting {
         this.createdAt = LocalDateTime.now();
     }
 
-    public static Meeting create(Group group, User creator,String title) {
+    public static Meeting create(Group group, User creator, String title) {
         Meeting meeting = new Meeting();
         meeting.group = group;
         meeting.creator = creator;
