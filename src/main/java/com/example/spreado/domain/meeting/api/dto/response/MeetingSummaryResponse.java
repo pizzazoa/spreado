@@ -6,7 +6,6 @@ public record MeetingSummaryResponse(
         Long meetingId,
         Long groupId,
         String title,
-        String meetingLink,
         MeetingStatus status
 ) {
 }
