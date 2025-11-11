@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class SummaryController {
     @Operation(
             summary = "회의록 요약 생성",
             description = "노트의 content JSON을 전처리하고 AI로부터 요약을 생성합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             responses = {
                     @ApiResponse(responseCode = "201", description = "요약 생성 성공", content = @Content(schema = @Schema(implementation = SummaryResponse.class))),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
@@ -47,7 +49,6 @@ public class SummaryController {
     }
 
     @GetMapping("/{noteId}")
-    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "회의록 요약 조회",
             description = "노트 ID로 저장된 요약을 조회합니다.",
@@ -62,6 +63,7 @@ public class SummaryController {
     @Operation(
             summary = "회의록 요약 수정",
             description = "AI가 생성한 요약을 수동으로 수정합니다.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = SummaryResponse.class))),
                     @ApiResponse(responseCode = "404", description = "요약을 찾을 수 없음", content = @Content)
@@ -76,7 +78,8 @@ public class SummaryController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "회의록 요약 삭제",
-            description = "저장된 요약을 삭제합니다."
+            description = "저장된 요약을 삭제합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     public void deleteSummary(@PathVariable Long summaryId) {
         summaryService.deleteSummary(summaryId);
