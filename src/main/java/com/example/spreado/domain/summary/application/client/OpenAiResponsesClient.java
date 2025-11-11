@@ -28,19 +28,10 @@ public class OpenAiResponsesClient implements AiClient {
 
     @Override
     public MeetingSummaryDto requestSummary(String prompt) {
-        log.info("AI 요약 요청 시작 - promptLength: {}", prompt.length());
-        log.debug("프롬프트 내용: {}", prompt);
-
         ResponseCreateParams params = payloadBuilder.buildRequest(prompt);
-        log.debug("요청 파라미터 생성 완료 - model: {}", params.model());
 
         try {
-            log.info("OpenAI API 호출 시작");
             Response response = openAIClient.responses().create(params);
-            log.info("OpenAI API 호출 완료");
-
-            log.debug("응답 상태 - hasError: {}, outputSize: {}",
-                    response.error().isPresent(), response.output().size());
 
             // 에러 응답 확인
             response.error().ifPresent(error -> {
@@ -50,18 +41,11 @@ public class OpenAiResponsesClient implements AiClient {
             });
 
             String jsonText = extractText(response);
-            log.debug("응답 텍스트 추출 완료 - textLength: {}", jsonText.length());
-            log.debug("응답 JSON: {}", jsonText);
-
-            MeetingSummaryDto result = parseToDto(jsonText);
-            log.info("AI 요약 파싱 완료");
-
-            return result;
+            return parseToDto(jsonText);
 
         } catch (OpenAIException e) {
             log.error("OpenAI API 호출 중 오류 발생 - errorType: {}, message: {}",
-                    e.getClass().getSimpleName(),
-                    e.getMessage(), e);
+                    e.getClass().getSimpleName(), e.getMessage(), e);
             throw new IllegalStateException("AI 요약 호출 중 오류가 발생했습니다.", e);
         } catch (Exception e) {
             log.error("예기치 않은 오류 발생 - errorType: {}, message: {}",
@@ -74,29 +58,17 @@ public class OpenAiResponsesClient implements AiClient {
      * Response 객체에서 텍스트 콘텐츠를 추출합니다.
      */
     private String extractText(Response response) {
-        log.debug("텍스트 추출 시작 - outputItems: {}", response.output().size());
-
-        try {
-            return response.output().stream()
-                    .map(ResponseOutputItem::message)
-                    .flatMap(Optional::stream)
-                    .map(ResponseOutputMessage::content)
-                    .flatMap(java.util.Collection::stream)
-                    .map(ResponseOutputMessage.Content::outputText)
-                    .flatMap(Optional::stream)
-                    .map(ResponseOutputText::text)
-                    .filter(StringUtils::hasText)
-                    .findFirst()
-                    .orElseThrow(() -> {
-                        log.error("AI 응답에서 텍스트를 찾을 수 없음 - outputItems: {}",
-                                response.output().size());
-                        return new IllegalStateException("AI 응답에 텍스트가 포함되어 있지 않습니다.");
-                    });
-        } catch (Exception e) {
-            log.error("텍스트 추출 중 오류 발생 - errorType: {}, message: {}",
-                    e.getClass().getName(), e.getMessage(), e);
-            throw e;
-        }
+        return response.output().stream()
+                .map(ResponseOutputItem::message)
+                .flatMap(Optional::stream)
+                .map(ResponseOutputMessage::content)
+                .flatMap(java.util.Collection::stream)
+                .map(ResponseOutputMessage.Content::outputText)
+                .flatMap(Optional::stream)
+                .map(ResponseOutputText::text)
+                .filter(StringUtils::hasText)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("AI 응답에 텍스트가 포함되어 있지 않습니다."));
     }
 
     /**

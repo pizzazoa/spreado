@@ -34,41 +34,26 @@ public class SummaryService {
 
     @Transactional
     public SummaryResponse generateSummary(Long noteId) {
-        log.info("요약 생성 시작 - noteId: {}", noteId);
-
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new NotFoundException("해당 노트를 찾을 수 없습니다."));
-        log.debug("노트 조회 완료 - noteId: {}, contentLength: {}", noteId, note.getContent().toString().length());
 
         String plainText = documentPreprocessor.toPlainText(note.getContent());
-        log.debug("텍스트 전처리 완료 - plainTextLength: {}", plainText.length());
-
         if (!StringUtils.hasText(plainText)) {
-            log.warn("요약할 회의록 내용이 비어 있음 - noteId: {}", noteId);
             throw new BadRequestException("요약할 회의록 내용이 비어 있습니다.");
         }
 
         String prompt = promptService.buildSummaryPrompt(plainText);
-        log.debug("프롬프트 생성 완료 - promptLength: {}", prompt.length());
 
         try {
-            log.info("AI 요약 요청 시작 - noteId: {}", noteId);
             var summaryDto = aiClient.requestSummary(prompt);
-            log.info("AI 요약 요청 완료 - noteId: {}", noteId);
-
             String summaryJson = convertToJson(summaryDto);
-            log.debug("요약 JSON 변환 완료 - jsonLength: {}", summaryJson.length());
 
             return summaryRepository.findByNoteId(noteId)
                     .map(existing -> {
-                        log.info("기존 요약 업데이트 - summaryId: {}", existing.getId());
                         existing.updateSummaryJson(summaryJson);
                         return SummaryResponse.from(existing);
                     })
-                    .orElseGet(() -> {
-                        log.info("새로운 요약 생성 - noteId: {}", noteId);
-                        return SummaryResponse.from(summaryRepository.save(Summary.create(note, summaryJson)));
-                    });
+                    .orElseGet(() -> SummaryResponse.from(summaryRepository.save(Summary.create(note, summaryJson))));
         } catch (Exception e) {
             log.error("요약 생성 중 오류 발생 - noteId: {}, errorType: {}, errorMessage: {}",
                     noteId, e.getClass().getName(), e.getMessage(), e);
