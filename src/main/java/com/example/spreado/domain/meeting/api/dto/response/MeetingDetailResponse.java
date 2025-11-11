@@ -7,7 +7,6 @@ import java.util.List;
 public record MeetingDetailResponse(
         Long meetingId,
         String title,
-        String meetingLink,
         MeetingStatus status,
         List<MeetingMemberResponse> members
 ) {

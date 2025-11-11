@@ -44,15 +44,4 @@ public class Note {
         note.content = content;
         return note;
     }
-
-    /**
-     * 테스트용
-     * 임의의 문자열을 jsonb로 저장 (그냥 "텍스트 노드"로 래핑)
-     */
-    public static Note createFromText(Meeting meeting, String raw) {
-        Note note = new Note();
-        note.meeting = meeting;
-        note.content = TextNode.valueOf(raw == null ? "" : raw);
-        return note;
-    }
 }
