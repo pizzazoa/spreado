@@ -21,6 +21,18 @@ spring:
     baseline-on-migrate: true   # 기존 DB 위에 적용할 때 유용
     baseline-version: 0
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME:}
+    password: ${GMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 springdoc:
   api-docs:
     enabled: false   # 공통: 기본 꺼두기(운영 안전)
