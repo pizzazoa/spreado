@@ -7,6 +7,7 @@ public record GroupDetailResponse(
         String name,
         String inviteLink,
         String myRole,
+        boolean isLeader,
         List<GroupMemberResponse> members
 ) {
 }

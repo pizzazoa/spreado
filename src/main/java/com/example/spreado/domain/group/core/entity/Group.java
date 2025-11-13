@@ -23,6 +23,9 @@ public class Group {
     @Column(name = "invite_link", nullable = false, unique = true)
     private String inviteLink;
 
+    @Column(name = "leader_id")
+    private Long leaderId;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -39,10 +42,15 @@ public class Group {
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public static Group create(String name, String inviteLink) {
+    public static Group create(String name, String inviteLink, Long leaderId) {
         Group group = new Group();
         group.name = name;
         group.inviteLink = inviteLink;
+        group.leaderId = leaderId;
         return group;
+    }
+
+    public boolean isLeader(Long userId) {
+        return this.leaderId != null && this.leaderId.equals(userId);
     }
 }
