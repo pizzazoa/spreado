@@ -31,4 +31,19 @@ public class MeetingRepository {
                 .setParameter("id", id)
                 .getResultList();
     }
+
+    public Optional<Meeting> findByNoteId(Long noteId) {
+        return em.createQuery("SELECT m FROM Meeting m JOIN Note n ON n.meeting = m WHERE n.id = :noteId", Meeting.class)
+                .setParameter("noteId", noteId)
+                .getResultStream()
+                .findFirst();
+    }
+
+    public List<String> findParticipantEmailsByMeetingId(Long meetingId) {
+        return em.createQuery("select mj.user.email " +
+                "from MeetingJoin mj " +
+                "where mj.meeting.id = :meetingId", String.class)
+                .setParameter("meetingId", meetingId)
+                .getResultList();
+    }
 }
