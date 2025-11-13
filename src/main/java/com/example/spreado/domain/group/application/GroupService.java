@@ -40,7 +40,7 @@ public class GroupService {
                 .orElseThrow(() -> new NotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         String inviteLink = groupInviteLinkService.generateUniqueInviteLink();
-        Group group = Group.create(request.name(), inviteLink);
+        Group group = Group.create(request.name(), inviteLink, userId);
         groupRepository.save(group);
 
         GroupRole role = GroupRole.from(request.role());
@@ -84,6 +84,7 @@ public class GroupService {
                 group.getName(),
                 group.getInviteLink(),
                 myMembership.getRole().name(),
+                group.isLeader(userId),
                 memberResponses
         );
     }
@@ -117,5 +118,17 @@ public class GroupService {
                 .orElseThrow(() -> new BadRequestException("그룹에 참여하지 않은 사용자입니다."));
 
         groupMemberRepository.deleteById(membership.getId());
+    }
+
+    @Transactional
+    public void deleteGroup(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("해당 그룹을 찾을 수 없습니다."));
+
+        if (!group.isLeader(userId)) {
+            throw new ForbiddenException("그룹을 삭제할 권한이 없습니다. 그룹 리더만 삭제할 수 있습니다.");
+        }
+
+        groupRepository.deleteById(groupId);
     }
 }

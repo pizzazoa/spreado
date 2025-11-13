@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -112,5 +113,22 @@ public class GroupController {
     public void leaveGroup(@PathVariable Long groupId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         groupService.leaveGroup(groupId, userId);
+    }
+
+    @DeleteMapping("/{groupId}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "그룹 삭제",
+            description = "그룹을 삭제합니다. 그룹 리더만 삭제할 수 있습니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+            @ApiResponse(responseCode = "404", description = "그룹을 찾을 수 없음", content = @Content)
+    })
+    public void deleteGroup(@PathVariable Long groupId, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        groupService.deleteGroup(groupId, userId);
     }
 }

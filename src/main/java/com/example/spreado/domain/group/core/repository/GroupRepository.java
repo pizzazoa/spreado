@@ -38,4 +38,9 @@ public class GroupRepository {
                 .getSingleResult();
         return count > 0;
     }
+
+    public void deleteById(Long id) {
+        Group reference = em.getReference(Group.class, id);
+        em.remove(reference);
+    }
 }
