@@ -1,29 +1,87 @@
-# spreado
+# 📝 Spreado BE
 
-# Getting Started
+AI 기반 개발팀 회의록 자동화 및 프로젝트 관리 도우미
+Spreado의 백엔드 서버입니다.
 
-### Reference Documentation
-For further reference, please consider the following sections:
+## 🛠️ Stacks
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/3.5.6/gradle-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.5.6/gradle-plugin/packaging-oci-image.html)
-* [Spring Web](https://docs.spring.io/spring-boot/3.5.6/reference/web/servlet.html)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/3.5.6/reference/data/sql.html#data.sql.jpa-and-spring-data)
-* [Spring Boot Actuator](https://docs.spring.io/spring-boot/3.5.6/reference/actuator/index.html)
-* [Validation](https://docs.spring.io/spring-boot/3.5.6/reference/io/validation.html)
+- JAVA 21
+- Spring Boot 3.5.6
+- PostgreSQL
+- JPA (Hibernate)
+- Gradle
+- GCP
 
-### Guides
-The following guides illustrate how to use some features concretely:
+---
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Building a RESTful Web Service with Spring Boot Actuator](https://spring.io/guides/gs/actuator-service/)
-* [Validation](https://spring.io/guides/gs/validating-form-input/)
+## 🧾 Commit Convention
 
-### Additional Links
-These additional references should also help you:
+Spreado는 Conventional Commits 규칙을 기반으로 commitlint를 사용해 커밋 메시지 품질을 관리합니다.
 
-* [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
+모든 커밋은 아래와 같이 지정된 type / scope / subject 형식을 따라야 하며, 규칙을 위반하면 커밋이 거부됩니다.
+```
+<type>(<scope>): <subject>
+
+<body>
+```
+
+
+### 1. type (무엇을 했는가)
+
+| 타입 | 설명 |
+|------|------|
+| ✨ `feat` | 새로운 기능 추가 |
+| 🐛 `fix` | 버그 수정 |
+| 📚 `docs` | 문서 관련 변경 (예: README, 주석) |
+| 💎 `style` | 코드 의미에는 영향을 주지 않는 스타일 변경 (포맷, 세미콜론 등) |
+| 📦 `refactor` | 리팩토링 (기능 변경 없이 구조 개선) |
+| 🚀 `perf` | 성능 개선 |
+| 🚨 `test` | 테스트 코드 추가/보완 |
+| ⚙️ `ci` | CI 설정 및 관련 스크립트 변경 |
+| ♻️ `chore` | 기타 작업 (예: 패키지 설치, 설정 파일 변경, 디렉토리 정리 등) |
+| 🗑 `revert` | 이전 커밋 되돌리기 |
+
+---
+
+### 2. scope (어디를 바꿨는가)
+
+| Scope        | 설명                                            |
+|:-------------|:----------------------------------------------|
+| 🔐 `auth`    | 인증/인가 도메인                                     |
+| 🙋‍♂️ `user` | 사용자 도메인                                       |
+| 👥 `group`   | 그룹 도메인                                        |
+| 📚 `archive` | 자료실/아카이브 도메인                                  |
+| 📝 `meeting` | 회의 도메인                                        |
+| 🤖 `ai`      | AI 처리                                         |
+| 📧 `notify`  | 알림/이메일 전송                                     |
+| 🛠️ `infra`  | 설정/인프라                 |
+| 🗄️ `db`     | DB/마이그레이션                  |
+| 🌎 `global`  | 전역 설정/리소스          |
+
+---
+
+### 3. subject (무슨 일이 일어났는가)
+
+- 변경된 내용을 한 줄로 간결하게 요약합니다.
+- 한국어로 자연스럽게 작성하며, 읽는 사람이 바로 이해할 수 있도록 합니다.
+- 문장 끝에는 마침표(.)를 붙이지 않습니다.
+
+> 예: 회원 탈퇴 기능 추가, 토큰 재발급 로직 수정, 빌드 스크립트 구조 개선
+
+---
+
+### 4. body (왜 그렇게 했는가)
+
+- 선택 항목이지만, 기능 수정이나 리팩토링 등 맥락이 필요한 변경이라면 작성합니다.
+- “무엇을 바꿨고, 왜 바꿨는지”를 중심으로 구체적으로 설명합니다.
+> 예:
+사용자 조회 시 불필요한 쿼리가 반복 실행되어 응답 속도가 저하되었습니다.
+쿼리 캐싱을 적용하여 데이터 접근 횟수를 줄이고 성능을 개선했습니다.
+
+---
+
+### 설치 및 사용법
+
+- 터미널에서 `npm install`을 실행하여 commitlint를 설치합니다.
+- 커밋 시 터미널에서 `npm run commit` 입력을 통해 커밋합니다.
+
