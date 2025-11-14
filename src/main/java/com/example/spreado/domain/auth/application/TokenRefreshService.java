@@ -4,6 +4,7 @@ import com.example.spreado.domain.auth.core.entity.UserRefreshToken;
 import com.example.spreado.domain.auth.core.repository.TokenRefreshRepository;
 import com.example.spreado.domain.user.application.UserService;
 import com.example.spreado.domain.user.core.entity.User;
+import com.example.spreado.domain.user.core.repository.UserRepository;
 import com.example.spreado.global.security.token.AccessTokenProvider;
 import com.example.spreado.global.security.token.RefreshTokenProvider;
 import com.example.spreado.global.shared.exception.JwtAuthException;
@@ -20,13 +21,14 @@ public class TokenRefreshService {
     private final TokenRefreshRepository tokenRefreshRepository;
     private final RefreshTokenProvider refreshTokenProvider;
     private final AccessTokenProvider accessTokenProvider;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     /**
      * 로그인 시 refresh token 해시 저장 (기존 토큰 무효화)
      */
     public void saveUserRefreshToken(Long userId, String hashedRefreshToken) {
-        User user = userService.getUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new JwtAuthException("유효하지 않은 사용자입니다."));
 
         // 기존 토큰들 revoke
         tokenRefreshRepository.deleteByUserId(userId);
