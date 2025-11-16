@@ -39,3 +39,7 @@ springdoc:
     enabled: true
   swagger-ui:
     path: /swagger-ui.html
+
+cors:
+  allowed-origins:
+    - http://localhost:3000

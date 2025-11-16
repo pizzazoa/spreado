@@ -43,3 +43,6 @@ ai:
   url: ${SUMMARY_AI_URL:}
   api-key: ${SUMMARY_AI_API_KEY:}
   model: ${SUMMARY_AI_MODEL:gpt-4o-mini}
+
+server:
+  port: ${PORT:8080}
