@@ -6,11 +6,11 @@ WORKDIR /app
 # gradle 관련 먼저 복사해서 빌드 속도 향상
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle gradle
-RUN chmod +x gradlew
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew --no-daemon dependencies || true
 
 COPY . .
-RUN chmod +x gradlew
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew --no-daemon clean bootJar  # 자바 실행용 bootJar 파일 생성
 
 FROM eclipse-temurin:21-jre
