@@ -185,6 +185,22 @@ public class MeetingService {
                 .toList();
     }
 
+    public List<MeetingSummaryResponse> getOngoingMeetings(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("해당 그룹을 찾을 수 없습니다."));
+
+        List<Meeting> meetings = meetingRepository.findAllByGroupIdAndStatus(group.getId(), MeetingStatus.ONGOING);
+
+        return meetings.stream()
+                .map(meeting -> new MeetingSummaryResponse(
+                        meeting.getId(),
+                        group.getId(),
+                        meeting.getTitle(),
+                        meeting.getStatus()
+                ))
+                .toList();
+    }
+
     private JsonNode wrap(JsonNode content) {
         ObjectNode wrapper = objectMapper.createObjectNode();
         wrapper.set("data", content);
