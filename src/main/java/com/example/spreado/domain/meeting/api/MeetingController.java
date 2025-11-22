@@ -140,4 +140,17 @@ public class MeetingController {
         Long userId = (Long) authentication.getPrincipal();
         return meetingService.getMyMeetings(userId);
     }
+
+    @GetMapping("/{groupId}/ongoing")
+    @Operation(
+            summary = "진행 중인 회의 목록 조회",
+            description = "현재 진행 중인 모든 회의 목록을 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MeetingSummaryResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content)
+            }
+    )
+    public List<MeetingSummaryResponse> getOngoingMeetings(@PathVariable Long groupId) {
+        return meetingService.getOngoingMeetings(groupId);
+    }
 }

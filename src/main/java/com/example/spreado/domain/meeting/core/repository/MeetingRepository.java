@@ -1,6 +1,7 @@
 package com.example.spreado.domain.meeting.core.repository;
 
 import com.example.spreado.domain.meeting.core.entity.Meeting;
+import com.example.spreado.domain.meeting.core.entity.MeetingStatus;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -44,6 +45,13 @@ public class MeetingRepository {
                 "from MeetingJoin mj " +
                 "where mj.meeting.id = :meetingId", String.class)
                 .setParameter("meetingId", meetingId)
+                .getResultList();
+    }
+
+    public List<Meeting> findAllByGroupIdAndStatus(Long id, MeetingStatus meetingStatus) {
+        return em.createQuery("SELECT m FROM Meeting m WHERE m.group.id = :id AND m.status = :status", Meeting.class)
+                .setParameter("id", id)
+                .setParameter("status", meetingStatus)
                 .getResultList();
     }
 }
