@@ -1,9 +1,11 @@
 package com.example.spreado.domain.group.application;
 
 import com.example.spreado.domain.group.api.dto.request.GroupCreateRequest;
+import com.example.spreado.domain.group.api.dto.request.GroupEmailInviteRequest;
 import com.example.spreado.domain.group.api.dto.request.GroupJoinRequest;
 import com.example.spreado.domain.group.api.dto.response.GroupCreateResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupDetailResponse;
+import com.example.spreado.domain.group.api.dto.response.GroupEmailInviteResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupJoinResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupMemberResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupSummaryResponse;
@@ -12,6 +14,7 @@ import com.example.spreado.domain.group.core.entity.GroupMember;
 import com.example.spreado.domain.group.core.entity.GroupRole;
 import com.example.spreado.domain.group.core.repository.GroupMemberRepository;
 import com.example.spreado.domain.group.core.repository.GroupRepository;
+import com.example.spreado.domain.group.core.service.GroupEmailInviteService;
 import com.example.spreado.domain.group.core.service.GroupInviteLinkService;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.domain.user.core.repository.UserRepository;
@@ -33,6 +36,7 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
     private final GroupInviteLinkService groupInviteLinkService;
+    private final GroupEmailInviteService groupEmailInviteService;
 
     @Transactional
     public GroupCreateResponse createGroup(GroupCreateRequest request, Long userId) {
@@ -130,5 +134,25 @@ public class GroupService {
         }
 
         groupRepository.deleteById(groupId);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupEmailInviteResponse sendEmailInvites(Long groupId, GroupEmailInviteRequest request, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("해당 그룹을 찾을 수 없습니다."));
+
+        GroupMember membership = groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
+                .orElseThrow(() -> new ForbiddenException("그룹에 참여 중인 사용자만 초대할 수 있습니다."));
+
+        User inviter = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+        groupEmailInviteService.sendInviteEmails(group, inviter, request.emails(), request.message());
+
+        return new GroupEmailInviteResponse(
+                group.getId(),
+                request.emails().size(),
+                request.emails()
+        );
     }
 }

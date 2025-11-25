@@ -1,9 +1,11 @@
 package com.example.spreado.domain.group.api;
 
 import com.example.spreado.domain.group.api.dto.request.GroupCreateRequest;
+import com.example.spreado.domain.group.api.dto.request.GroupEmailInviteRequest;
 import com.example.spreado.domain.group.api.dto.request.GroupJoinRequest;
 import com.example.spreado.domain.group.api.dto.response.GroupCreateResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupDetailResponse;
+import com.example.spreado.domain.group.api.dto.response.GroupEmailInviteResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupJoinResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupSummaryResponse;
 import com.example.spreado.domain.group.application.GroupService;
@@ -130,5 +132,23 @@ public class GroupController {
     public void deleteGroup(@PathVariable Long groupId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         groupService.deleteGroup(groupId, userId);
+    }
+
+    @PostMapping("/{groupId}/invite")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "그룹 초대 이메일 발송",
+            description = "그룹 초대 링크를 이메일로 발송합니다. 그룹 멤버만 초대할 수 있습니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "이메일 발송 성공", content = @Content(schema = @Schema(implementation = GroupEmailInviteResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+            @ApiResponse(responseCode = "404", description = "그룹을 찾을 수 없음", content = @Content)
+    })
+    public GroupEmailInviteResponse sendEmailInvites(@PathVariable Long groupId, @Valid @RequestBody GroupEmailInviteRequest request, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return groupService.sendEmailInvites(groupId, request, userId);
     }
 }
