@@ -6,6 +6,7 @@ import com.example.spreado.domain.group.api.dto.request.GroupJoinRequest;
 import com.example.spreado.domain.group.api.dto.response.GroupCreateResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupDetailResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupEmailInviteResponse;
+import com.example.spreado.domain.group.api.dto.response.GroupInviteInfoResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupJoinResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupMemberResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupSummaryResponse;
@@ -153,6 +154,28 @@ public class GroupService {
                 group.getId(),
                 request.emails().size(),
                 request.emails()
+        );
+    }
+
+    public GroupInviteInfoResponse getGroupByInviteLink(String inviteLink) {
+        Group group = groupRepository.findByInviteLink(inviteLink)
+                .orElseThrow(() -> new NotFoundException("해당 초대 링크로 그룹을 찾을 수 없습니다."));
+
+        int memberCount = groupMemberRepository.findAllByGroupId(group.getId()).size();
+
+        String leaderName = null;
+        if (group.getLeaderId() != null) {
+            leaderName = userRepository.findById(group.getLeaderId())
+                    .map(User::getName)
+                    .orElse("알 수 없음");
+        }
+
+        return new GroupInviteInfoResponse(
+                group.getId(),
+                group.getName(),
+                memberCount,
+                leaderName,
+                group.getInviteLink()
         );
     }
 }
