@@ -8,6 +8,7 @@ public record MeetingDetailResponse(
         Long meetingId,
         String title,
         MeetingStatus status,
-        List<MeetingMemberResponse> members
+        List<MeetingMemberResponse> members,
+        Long noteId
 ) {
 }
