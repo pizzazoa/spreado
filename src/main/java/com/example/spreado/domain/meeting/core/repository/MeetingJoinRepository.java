@@ -66,4 +66,16 @@ public class MeetingJoinRepository {
                 .setParameter("userId", userId)
                 .getResultList();
     }
+
+    public void deleteByMeetingIdAndUserId(Long meetingId, Long userId) {
+        em.createQuery("""
+                        DELETE FROM MeetingJoin mj
+                        WHERE mj.meeting.id = :meetingId AND mj.user.id = :userId
+                        """)
+                .setParameter("meetingId", meetingId)
+                .setParameter("userId", userId)
+                .executeUpdate();
+        em.flush();
+        em.clear();
+    }
 }
