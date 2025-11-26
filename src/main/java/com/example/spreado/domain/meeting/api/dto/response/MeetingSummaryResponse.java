@@ -1,0 +1,11 @@
+package com.example.spreado.domain.meeting.api.dto.response;
+
+import com.example.spreado.domain.meeting.core.entity.MeetingStatus;
+
+public record MeetingSummaryResponse(
+        Long meetingId,
+        Long groupId,
+        String title,
+        MeetingStatus status
+) {
+}

@@ -1,0 +1,68 @@
+{
+  "liveblocksType": "LiveObject",
+  "data": {
+    "doc": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": { "level": 1 },
+          "content": [{ "type": "text", "text": "2025-11-10 새 기능 스프린트 회의" }]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "오늘 회의에서는 다음 스프린트 목표와 주요 개선 사항을 정리했다." }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "신규 사용자 가입 과정의 이메일 인증 절차 단순화 및 전송 속도 개선" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "홈 화면 초기 렌더링 구조 재검토 및 이미지 캐시 활용 방안 검토" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "시각 디자인 시안 피드백 반영: 버튼 위치를 포함한 화면 구조 재정리" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "다음 주 금요일 베타 릴리스 목표, 일정표를 오늘 정리해 공유" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "자동 요약 기능을 위한 회의 데이터 수집 계획: 개인정보 필터링 로직 필요" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "QA 중 발견된 로그인 오류 수정 및 재현 절차 문서화" }] }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "전 팀원 베타 시연 예정: 이번 주 금요일 오전" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
