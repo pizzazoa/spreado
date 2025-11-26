@@ -93,6 +93,29 @@ public class LiveblocksService {
         }
     }
 
+    public Map<String, Object> createRoomForMeeting(Long meetingId) {
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new NotFoundException("해당 회의를 찾을 수 없습니다."));
+
+        String roomId = roomIdPolicy.toRoomId(meeting);
+
+        // 필요한 경우 메타데이터에 groupId/meetingId 등 넣어두면 대시보드/검색에서 편함
+        Map<String, Object> metadata = Map.of(
+                "groupId", String.valueOf(meeting.getGroup().getId()),
+                "meetingId", String.valueOf(meeting.getId())
+        );
+
+        return createRoom(roomId, metadata);
+    }
+
+    public void deleteRoomForMeeting(Long meetingId) {
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new NotFoundException("해당 회의를 찾을 수 없습니다."));
+
+        String roomId = roomIdPolicy.toRoomId(meeting);
+        deleteRoom(roomId);
+    }
+
     private Map<String, Object> issueClientToken(String roomId, String userId, Map<String, Object> userInfo) {
         String url = apiBaseUrl + "/v2/authorize-user";
 
@@ -123,6 +146,58 @@ public class LiveblocksService {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(String.class)
+                .block();
+    }
+
+    private Map<String, Object> createRoom(String roomId, Map<String, Object> metadata) {
+        String url = apiBaseUrl + "/v2/rooms?idempotent=true";
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", roomId);
+        // private room으로 두고 access token(permissions)으로만 입장 제어
+        body.put("defaultAccesses", List.of());
+
+        if (metadata != null && !metadata.isEmpty()) {
+            body.put("metadata", metadata);
+        }
+
+        return defaultWebClient.post()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + secret)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse ->
+                        clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new IllegalStateException(
+                                        "Failed to create Liveblocks room. " +
+                                                "roomId=" + roomId +
+                                                ", status=" + clientResponse.statusCode() +
+                                                ", body=" + errorBody
+                                )))
+                )
+                .bodyToMono(Map.class)
+                .block();
+    }
+
+    private void deleteRoom(String roomId) {
+        String encodedRoomId = URLEncoder.encode(roomId, StandardCharsets.UTF_8);
+        String url = apiBaseUrl + "/v2/rooms/" + encodedRoomId;
+
+        defaultWebClient.delete()
+                .uri(URI.create(url))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + secret)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse ->
+                        clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new IllegalStateException(
+                                        "Failed to delete Liveblocks room. " +
+                                                "roomId=" + roomId +
+                                                ", status=" + clientResponse.statusCode() +
+                                                ", body=" + errorBody
+                                )))
+                )
+                .toBodilessEntity()
                 .block();
     }
 }
