@@ -14,6 +14,7 @@ import com.example.spreado.domain.note.core.entity.Note;
 import com.example.spreado.domain.meeting.core.repository.MeetingJoinRepository;
 import com.example.spreado.domain.meeting.core.repository.MeetingRepository;
 import com.example.spreado.domain.note.core.service.NoteService;
+import com.example.spreado.domain.note.core.repository.NoteRepository;
 import com.example.spreado.domain.note.api.dto.response.NoteResponse;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.domain.user.core.repository.UserRepository;
@@ -43,6 +44,7 @@ public class MeetingService {
     private final GroupMemberRepository groupMemberRepository;
     private final LiveblocksService liveblocksService;
     private final NoteService noteService;
+    private final NoteRepository noteRepository;
     private final RoomIdPolicy roomIdPolicy;
     private final ObjectMapper objectMapper;
 
@@ -132,11 +134,16 @@ public class MeetingService {
                 ))
                 .toList();
 
+        Long noteId = noteRepository.findByMeetingId(meetingId)
+                .map(Note::getId)
+                .orElse(null);
+
         return new MeetingDetailResponse(
                 meeting.getId(),
                 meeting.getTitle(),
                 meeting.getStatus(),
-                participantResponses
+                participantResponses,
+                noteId
         );
     }
 
