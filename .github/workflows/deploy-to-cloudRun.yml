@@ -1,0 +1,119 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# 레포 → Settings → Secrets and variables → Actions 에서 설정
+# - Variables(vars): 변경 가능하지만 비밀 아님
+# - Secrets(secrets): 비밀번호/키 등 비밀
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}             # 예: your-project-id
+  REGION: ${{ vars.GCP_REGION }}                     # 예: asia-northeast3
+  AR_REPOSITORY: ${{ vars.AR_REPOSITORY }}           # 예: app-repo (Artifact Registry 리포지토리 이름)
+  SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}             # 예: spreado
+  IMAGE_BASE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.AR_REPOSITORY }}/spreado
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 1) GCP 인증 (WIF) — 서비스 계정에는 최소 권한 부여
+      #    roles/artifactregistry.writer, roles/run.admin, roles/iam.serviceAccountUser (+ Cloud SQL 쓰면 roles/cloudsql.client)
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}   # projects/NUM/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}       # cicd@PROJECT_ID.iam.gserviceaccount.com
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 2) Artifact Registry 로그인
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # 3) 도커 메타(태그/라벨) 생성
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_BASE }}
+          tags: |
+            type=raw,value=prod-latest
+            type=sha,format=long,prefix=prod-
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      # 4) Dockerfile 빌드 & 푸시 (레지스트리 캐시 사용)
+      - name: Build & Push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.IMAGE_BASE }}:buildcache
+          cache-to:   type=registry,ref=${{ env.IMAGE_BASE }}:buildcache,mode=max
+
+      # 5) Cloud Run 배포 (이미지 디제스트 고정)
+      - name: Deploy to Cloud Run
+        run: |
+          set -euo pipefail
+          IMAGE_REF="${{ env.IMAGE_BASE }}@${{ steps.build.outputs.digest }}"
+          echo "Deploying ${IMAGE_REF}"
+
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --image "${IMAGE_REF}" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --cpu 1 \
+            --memory 512Mi \
+            --concurrency 80 \
+            --max-instances 20 \
+            --timeout 300 \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
+            --set-env-vars "DB_URL=${{ vars.DB_URL }}" \
+            --set-env-vars "DB_USER=${{ vars.DB_USER }}" \
+            --set-env-vars "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            --set-env-vars "GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}" \
+            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --set-env-vars "FRONT_REDIRECT_URL=${{ vars.FRONT_REDIRECT_URL }}" \
+            --set-env-vars "SUMMARY_AI_URL=${{ vars.SUMMARY_AI_URL }}" \
+            --set-env-vars "SUMMARY_AI_API_KEY=${{ secrets.SUMMARY_AI_API_KEY }}" \
+            --set-env-vars "SUMMARY_AI_MODEL=${{ vars.SUMMARY_AI_MODEL }}" \
+            --set-env-vars "LIVEBLOCKS_SECRET=${{ secrets.LIVEBLOCKS_SECRET }}" \
+            --set-env-vars "LIVEBLOCKS_API_BASE=${{ vars.LIVEBLOCKS_API_BASE }}" \
+            --set-env-vars "GMAIL_USERNAME=${{ vars.GMAIL_USERNAME }}" \
+            --set-env-vars "GMAIL_PASSWORD=${{ secrets.GMAIL_PASSWORD }}" \
+            --set-env-vars "SWAGGER_SERVER_URL=${{ vars.SWAGGER_SERVER_URL }}" \
+            --set-env-vars "FRONTEND_SERVER_URL=${{ vars.FRONTEND_SERVER_URL }}"
+
+      - name: Summarize Deployment
+        if: success()
+        run: |
+          {
+            echo "## ✅ Cloud Run Deployment Summary"
+            echo "- **Service:** ${{ env.SERVICE }}"
+            echo "- **Region:** ${{ env.REGION }}"
+            echo "- **Image:** ${{ env.IMAGE_BASE }}@${{ steps.build.outputs.digest }}"
+            echo "- **Commit:** ${{ github.sha }}"
+            echo "- **Actor:** ${{ github.actor }}"
+            echo "- **Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          } >> "$GITHUB_STEP_SUMMARY"
