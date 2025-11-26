@@ -24,4 +24,11 @@ public class NoteRepository {
                 .getResultStream()
                 .findFirst();
     }
+
+    public Optional<Note> findByMeetingId(Long meetingId) {
+        return em.createQuery("SELECT n FROM Note n WHERE n.meeting.id = :meetingId", Note.class)
+                .setParameter("meetingId", meetingId)
+                .getResultStream()
+                .findFirst();
+    }
 }
