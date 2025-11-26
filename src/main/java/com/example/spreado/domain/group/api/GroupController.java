@@ -6,6 +6,7 @@ import com.example.spreado.domain.group.api.dto.request.GroupJoinRequest;
 import com.example.spreado.domain.group.api.dto.response.GroupCreateResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupDetailResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupEmailInviteResponse;
+import com.example.spreado.domain.group.api.dto.response.GroupInviteInfoResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupJoinResponse;
 import com.example.spreado.domain.group.api.dto.response.GroupSummaryResponse;
 import com.example.spreado.domain.group.application.GroupService;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -82,6 +84,19 @@ public class GroupController {
     public GroupDetailResponse getGroupDetail(@PathVariable Long groupId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return groupService.getGroupDetail(groupId, userId);
+    }
+
+    @GetMapping("/invite-info")
+    @Operation(
+            summary = "초대 링크로 그룹 정보 조회",
+            description = "초대 링크를 통해 그룹의 기본 정보를 조회합니다. 인증 없이 접근 가능합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = GroupInviteInfoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "그룹을 찾을 수 없음", content = @Content)
+    })
+    public GroupInviteInfoResponse getGroupByInviteLink(@RequestParam String link) {
+        return groupService.getGroupByInviteLink(link);
     }
 
     @PostMapping("/join")
