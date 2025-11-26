@@ -24,6 +24,7 @@ import com.example.spreado.global.shared.exception.NotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,7 @@ public class MeetingService {
     private final NoteRepository noteRepository;
     private final RoomIdPolicy roomIdPolicy;
     private final ObjectMapper objectMapper;
+    private final EntityManager em;
 
     public MeetingCreateResponse createMeeting(@Valid MeetingCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
@@ -60,6 +62,7 @@ public class MeetingService {
 
         MeetingJoin hostJoin = MeetingJoin.create(meeting, user);
         meetingJoinRepository.save(hostJoin);
+        em.flush();
 
         Map<String, Object> tokenJson = liveblocksService.getToken(meeting.getId(), userId);
 
@@ -79,13 +82,14 @@ public class MeetingService {
             throw new ForbiddenException("해당 그룹의 멤버가 아니므로 회의에 참여할 수 없습니다.");
         }
 
-        if (meetingJoinRepository.existsByMeetingIdAndUserId(meeting.getId(), userId)) {
-            throw new BadRequestException("이미 회의에 참여한 상태입니다.");
+        // 이미 참여 중이 아니면 새로 참여 처리
+        if (!meetingJoinRepository.existsByMeetingIdAndUserId(meeting.getId(), userId)) {
+            MeetingJoin meetingJoin = MeetingJoin.create(meeting, user);
+            meetingJoinRepository.save(meetingJoin);
+            em.flush();
         }
 
-        MeetingJoin meetingJoin = MeetingJoin.create(meeting, user);
-        meetingJoinRepository.save(meetingJoin);
-
+        // 참여 여부와 관계없이 토큰 발급
         Map<String, Object> tokenJson = liveblocksService.getToken(meeting.getId(), userId);
 
         return new MeetingJoinResponse(meeting.getId(), userId, tokenJson.get("token").toString());
@@ -102,7 +106,7 @@ public class MeetingService {
             throw new BadRequestException("호스트는 회의에서 나갈 수 없습니다.");
         }
 
-        meetingJoinRepository.deleteById(membership.getId());
+        meetingJoinRepository.deleteByMeetingIdAndUserId(meetingId, userId);
     }
 
     public List<MeetingSummaryResponse> getMeetingsByGroup(Long groupId) {
