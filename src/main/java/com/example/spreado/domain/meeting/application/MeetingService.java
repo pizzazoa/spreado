@@ -61,6 +61,8 @@ public class MeetingService {
         MeetingJoin hostJoin = MeetingJoin.create(meeting, user);
         meetingJoinRepository.save(hostJoin);
 
+        liveblocksService.createRoomForMeeting(meeting.getId());
+
         Map<String, Object> tokenJson = liveblocksService.getToken(meeting.getId(), userId);
 
         return new MeetingCreateResponse(meeting.getId(), tokenJson.get("token").toString());
@@ -165,6 +167,8 @@ public class MeetingService {
 
         JsonNode noteContent = liveblocksService.fetchStorageJson(roomId);
         JsonNode wrappedContent = wrap(noteContent);
+
+        liveblocksService.deleteRoomForMeeting(meeting.getId());
 
         Note note = Note.create(meeting, wrappedContent);
         noteService.save(note);
