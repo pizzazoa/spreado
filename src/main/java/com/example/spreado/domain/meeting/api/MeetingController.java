@@ -5,6 +5,7 @@ import com.example.spreado.domain.meeting.api.dto.request.MeetingCreateRequest;
 import com.example.spreado.domain.meeting.api.dto.response.*;
 import com.example.spreado.domain.meeting.application.MeetingService;
 import com.example.spreado.domain.note.api.dto.response.NoteResponse;
+import com.example.spreado.domain.summary.api.dto.response.SummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -120,7 +121,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
             @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없음", content = @Content)
     })
-    public NoteResponse endMeeting(@PathVariable Long meetingId, Authentication authentication) {
+    public SummaryResponse endMeeting(@PathVariable Long meetingId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return meetingService.endMeeting(meetingId, userId);
     }

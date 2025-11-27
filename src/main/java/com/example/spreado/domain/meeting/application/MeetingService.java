@@ -16,6 +16,8 @@ import com.example.spreado.domain.meeting.core.repository.MeetingRepository;
 import com.example.spreado.domain.note.core.service.NoteService;
 import com.example.spreado.domain.note.core.repository.NoteRepository;
 import com.example.spreado.domain.note.api.dto.response.NoteResponse;
+import com.example.spreado.domain.summary.api.dto.response.SummaryResponse;
+import com.example.spreado.domain.summary.application.SummaryService;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.domain.user.core.repository.UserRepository;
 import com.example.spreado.global.shared.exception.BadRequestException;
@@ -49,6 +51,7 @@ public class MeetingService {
     private final RoomIdPolicy roomIdPolicy;
     private final ObjectMapper objectMapper;
     private final EntityManager em;
+    private final SummaryService summaryService;
 
     public MeetingCreateResponse createMeeting(@Valid MeetingCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
@@ -154,7 +157,7 @@ public class MeetingService {
         );
     }
 
-    public NoteResponse endMeeting(Long meetingId, Long userId) {
+    public SummaryResponse endMeeting(Long meetingId, Long userId) {
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new NotFoundException("해당 회의를 찾을 수 없습니다."));
 
@@ -178,11 +181,7 @@ public class MeetingService {
         Note note = Note.create(meeting, wrappedContent);
         noteService.save(note);
 
-        return new NoteResponse(
-                note.getId(),
-                meeting.getId(),
-                note.getContent()
-        );
+        return summaryService.generateSummary(note.getId());
     }
 
     public List<MeetingSummaryResponse> getMyMeetings(Long userId) {
