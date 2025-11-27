@@ -122,6 +122,7 @@ public class MeetingService {
                         meeting.getId(),
                         group.getId(),
                         meeting.getTitle(),
+                        meeting.getCreatedAt(),
                         meeting.getStatus()
                 ))
                 .toList();
@@ -194,6 +195,7 @@ public class MeetingService {
                             meeting.getId(),
                             meeting.getGroup().getId(),
                             meeting.getTitle(),
+                            meeting.getCreatedAt(),
                             meeting.getStatus()
                     );
                 })
@@ -211,6 +213,7 @@ public class MeetingService {
                         meeting.getId(),
                         group.getId(),
                         meeting.getTitle(),
+                        meeting.getCreatedAt(),
                         meeting.getStatus()
                 ))
                 .toList();
