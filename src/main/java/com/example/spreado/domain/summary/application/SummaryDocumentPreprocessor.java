@@ -58,6 +58,20 @@ public class SummaryDocumentPreprocessor {
     }
 
     private JsonNode resolveDocNode(JsonNode root) {
+        // 1. data.content가 문자열이면 파싱 (Liveblocks 저장 형식)
+        JsonNode dataContent = root.path("data").path("content");
+        if (dataContent.isTextual()) {
+            try {
+                JsonNode parsed = objectMapper.readTree(dataContent.asText());
+                if (hasDocContent(parsed)) {
+                    return parsed;
+                }
+            } catch (JsonProcessingException e) {
+                // 파싱 실패 시 다음 경로 시도
+            }
+        }
+
+        // 2. data.doc 경로
         JsonNode docNode = root.path("data").path("doc");
         if (hasDocContent(docNode)) {
             return docNode;
