@@ -31,58 +31,132 @@ public final class SummaryEmailFormatter {
 
         StringBuilder sb = new StringBuilder();
         sb.append("""
-            <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;">
-              <h3 style="margin:0 0 8px;">[Summary]</h3>
-              <ul style="margin:0 0 16px;padding-left:22px;">
+            <div style="max-width:680px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;background:#ffffff;">
+              
+              <!-- Summary Section -->
+              <div style="margin-bottom:32px;">
+                <h2 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#0066cc;border-bottom:3px solid #0066cc;padding-bottom:8px;display:inline-block;">
+                  📋 Summary
+                </h2>
+                <div style="background:#f8f9fa;border-left:4px solid #0066cc;padding:16px 20px;border-radius:4px;margin-top:12px;">
+                  <p style="margin:0;font-size:15px;line-height:1.7;color:#2c3e50;">
             """);
-        sb.append("<li>").append(escapeHtml(nullToEmpty(data.summary))).append("</li>");
-        sb.append("</ul>");
+        sb.append(escapeHtml(nullToEmpty(data.summary)));
+        sb.append("""
+                  </p>
+                </div>
+              </div>
+            """);
 
-        sb.append("<h3 style=\"margin:16px 0 8px;\">[Milestones]</h3>");
+        // Milestones Section
+        sb.append("""
+              <!-- Milestones Section -->
+              <div style="margin-bottom:32px;">
+                <h2 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#28a745;border-bottom:3px solid #28a745;padding-bottom:8px;display:inline-block;">
+                  🎯 Milestones
+                </h2>
+            """);
+
         if (data.milestones == null || data.milestones.isEmpty()) {
-            sb.append("<ul style=\"margin:0 0 16px;padding-left:22px;\"><li>(없음)</li></ul>");
+            sb.append("""
+                <div style="background:#f8f9fa;padding:16px 20px;border-radius:4px;border-left:4px solid #dee2e6;margin-top:12px;">
+                  <p style="margin:0;color:#6c757d;font-style:italic;">등록된 마일스톤이 없습니다.</p>
+                </div>
+            """);
         } else {
-            sb.append("<ul style=\"margin:0 0 16px;padding-left:22px;\">");
-            for (Milestone m : data.milestones) {
+            sb.append("<div style=\"margin-top:12px;\">");
+            for (int i = 0; i < data.milestones.size(); i++) {
+                Milestone m = data.milestones.get(i);
                 String task = escapeHtml(nullToEmpty(m.task));
                 String deadline = escapeHtml(nullToEmpty(m.deadline));
-                if (!deadline.isBlank()) {
-                    sb.append("<li>").append(task).append(" (<em>")
-                            .append(deadline).append("</em>)</li>");
-                } else {
-                    sb.append("<li>").append(task).append("</li>");
-                }
-            }
-            sb.append("</ul>");
-        }
 
-        sb.append("<h3 style=\"margin:16px 0 8px;\">[Action Items By Role]</h3>");
-        sb.append("<div>");
-        for (String role : orderedRoles(roleMap)) {
-            List<String> items = roleMap.getOrDefault(role, Collections.emptyList());
-            sb.append("<div style=\"margin:0 0 8px;\">");
-            if (items.isEmpty()) {
-                sb.append("<div>- ").append(escapeHtml(role)).append(": (없음)</div>");
-            } else {
-                sb.append("<div>- ").append(escapeHtml(role)).append(":</div>");
-                sb.append("<ul style=\"margin:6px 0 6px 22px;padding-left:18px;\">");
-                for (String it : items) {
-                    sb.append("<li>").append(escapeHtml(it)).append("</li>");
+                sb.append("<div style=\"background:#ffffff;border:1px solid #e0e0e0;border-radius:6px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);\">");
+                sb.append("<div style=\"display:flex;align-items:start;\">");
+                sb.append("<span style=\"color:#28a745;font-weight:600;margin-right:10px;font-size:15px;\">▸</span>");
+                sb.append("<div style=\"flex:1;\">");
+                sb.append("<span style=\"font-size:15px;color:#2c3e50;\">").append(task).append("</span>");
+                if (!deadline.isBlank()) {
+                    sb.append("<div style=\"margin-top:6px;\">");
+                    sb.append("<span style=\"display:inline-block;background:#fff3cd;color:#856404;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:500;\">");
+                    sb.append("⏱ ").append(deadline);
+                    sb.append("</span></div>");
                 }
-                sb.append("</ul>");
+                sb.append("</div></div></div>");
             }
             sb.append("</div>");
         }
         sb.append("</div>");
 
-        sb.append("<hr style=\"margin:16px 0;border:none;border-top:1px solid #ddd;\"/>");
-        sb.append("</div>");
+        // Action Items Section
+        sb.append("""
+              <!-- Action Items Section -->
+              <div style="margin-bottom:32px;">
+                <h2 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#dc3545;border-bottom:3px solid #dc3545;padding-bottom:8px;display:inline-block;">
+                  ✅ Action Items By Role
+                </h2>
+                <div style="margin-top:12px;">
+            """);
+
+        for (String role : orderedRoles(roleMap)) {
+            List<String> items = roleMap.getOrDefault(role, Collections.emptyList());
+            String roleColor = getRoleColor(role);
+
+            sb.append("<div style=\"background:#ffffff;border:1px solid #e0e0e0;border-radius:6px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05);\">");
+            sb.append("<div style=\"display:flex;align-items:center;margin-bottom:").append(items.isEmpty() ? "0" : "12px").append(";\">");
+            sb.append("<span style=\"display:inline-block;background:").append(roleColor).append(";color:#ffffff;padding:4px 12px;border-radius:4px;font-weight:600;font-size:13px;margin-right:10px;\">");
+            sb.append(escapeHtml(role));
+            sb.append("</span>");
+
+            if (items.isEmpty()) {
+                sb.append("<span style=\"color:#6c757d;font-style:italic;font-size:14px;\">할당된 액션 아이템이 없습니다.</span>");
+            }
+            sb.append("</div>");
+
+            if (!items.isEmpty()) {
+                sb.append("<ul style=\"margin:0;padding:0;list-style:none;\">");
+                for (String it : items) {
+                    sb.append("<li style=\"padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#2c3e50;line-height:1.6;\">");
+                    sb.append("<span style=\"color:").append(roleColor).append(";margin-right:8px;font-weight:600;\">•</span>");
+                    sb.append(escapeHtml(it));
+                    sb.append("</li>");
+                }
+                sb.append("</ul>");
+            }
+            sb.append("</div>");
+        }
+
+        sb.append("""
+                </div>
+              </div>
+              
+              <!-- Footer -->
+              <div style="margin-top:40px;padding-top:20px;border-top:1px solid #e0e0e0;text-align:center;">
+                <p style="margin:0;font-size:13px;color:#6c757d;">
+                  이 메일은 회의 요약 시스템에서 자동 생성되었습니다.
+                </p>
+              </div>
+              
+            </div>
+            """);
+
         return sb.toString();
     }
 
     /* =========================
        내부 유틸
        ========================= */
+    private static String getRoleColor(String role) {
+        return switch (role) {
+            case "PM" -> "#0066cc";
+            case "PD" -> "#6f42c1";
+            case "FE" -> "#fd7e14";
+            case "BE" -> "#28a745";
+            case "AI" -> "#dc3545";
+            case "ALL" -> "#6c757d";
+            default -> "#17a2b8";
+        };
+    }
+
     private static SummaryPayload parse(String summaryJson) {
         try {
             if (summaryJson == null) return new SummaryPayload();
