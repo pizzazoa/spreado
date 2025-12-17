@@ -16,6 +16,8 @@ import com.example.spreado.domain.meeting.core.repository.MeetingRepository;
 import com.example.spreado.domain.note.core.service.NoteService;
 import com.example.spreado.domain.note.core.repository.NoteRepository;
 import com.example.spreado.domain.note.api.dto.response.NoteResponse;
+import com.example.spreado.domain.summary.api.dto.response.SummaryResponse;
+import com.example.spreado.domain.summary.application.SummaryService;
 import com.example.spreado.domain.user.core.entity.User;
 import com.example.spreado.domain.user.core.repository.UserRepository;
 import com.example.spreado.global.shared.exception.BadRequestException;
@@ -24,6 +26,7 @@ import com.example.spreado.global.shared.exception.NotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,6 +50,8 @@ public class MeetingService {
     private final NoteRepository noteRepository;
     private final RoomIdPolicy roomIdPolicy;
     private final ObjectMapper objectMapper;
+    private final EntityManager em;
+    private final SummaryService summaryService;
 
     public MeetingCreateResponse createMeeting(@Valid MeetingCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
@@ -60,6 +65,9 @@ public class MeetingService {
 
         MeetingJoin hostJoin = MeetingJoin.create(meeting, user);
         meetingJoinRepository.save(hostJoin);
+        em.flush();
+
+        liveblocksService.createRoomForMeeting(meeting.getId());
 
         Map<String, Object> tokenJson = liveblocksService.getToken(meeting.getId(), userId);
 
@@ -79,13 +87,14 @@ public class MeetingService {
             throw new ForbiddenException("해당 그룹의 멤버가 아니므로 회의에 참여할 수 없습니다.");
         }
 
-        if (meetingJoinRepository.existsByMeetingIdAndUserId(meeting.getId(), userId)) {
-            throw new BadRequestException("이미 회의에 참여한 상태입니다.");
+        // 이미 참여 중이 아니면 새로 참여 처리
+        if (!meetingJoinRepository.existsByMeetingIdAndUserId(meeting.getId(), userId)) {
+            MeetingJoin meetingJoin = MeetingJoin.create(meeting, user);
+            meetingJoinRepository.save(meetingJoin);
+            em.flush();
         }
 
-        MeetingJoin meetingJoin = MeetingJoin.create(meeting, user);
-        meetingJoinRepository.save(meetingJoin);
-
+        // 참여 여부와 관계없이 토큰 발급
         Map<String, Object> tokenJson = liveblocksService.getToken(meeting.getId(), userId);
 
         return new MeetingJoinResponse(meeting.getId(), userId, tokenJson.get("token").toString());
@@ -102,7 +111,7 @@ public class MeetingService {
             throw new BadRequestException("호스트는 회의에서 나갈 수 없습니다.");
         }
 
-        meetingJoinRepository.deleteById(membership.getId());
+        meetingJoinRepository.deleteByMeetingIdAndUserId(meetingId, userId);
     }
 
     public List<MeetingSummaryResponse> getMeetingsByGroup(Long groupId) {
@@ -116,6 +125,7 @@ public class MeetingService {
                         meeting.getId(),
                         group.getId(),
                         meeting.getTitle(),
+                        meeting.getCreatedAt(),
                         meeting.getStatus()
                 ))
                 .toList();
@@ -147,7 +157,7 @@ public class MeetingService {
         );
     }
 
-    public NoteResponse endMeeting(Long meetingId, Long userId) {
+    public SummaryResponse endMeeting(Long meetingId, Long userId) {
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new NotFoundException("해당 회의를 찾을 수 없습니다."));
 
@@ -166,14 +176,12 @@ public class MeetingService {
         JsonNode noteContent = liveblocksService.fetchStorageJson(roomId);
         JsonNode wrappedContent = wrap(noteContent);
 
+        liveblocksService.deleteRoomForMeeting(meeting.getId());
+
         Note note = Note.create(meeting, wrappedContent);
         noteService.save(note);
 
-        return new NoteResponse(
-                note.getId(),
-                meeting.getId(),
-                note.getContent()
-        );
+        return summaryService.generateSummary(note.getId());
     }
 
     public List<MeetingSummaryResponse> getMyMeetings(Long userId) {
@@ -186,6 +194,7 @@ public class MeetingService {
                             meeting.getId(),
                             meeting.getGroup().getId(),
                             meeting.getTitle(),
+                            meeting.getCreatedAt(),
                             meeting.getStatus()
                     );
                 })
@@ -203,6 +212,7 @@ public class MeetingService {
                         meeting.getId(),
                         group.getId(),
                         meeting.getTitle(),
+                        meeting.getCreatedAt(),
                         meeting.getStatus()
                 ))
                 .toList();
