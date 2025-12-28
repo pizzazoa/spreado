@@ -26,12 +26,14 @@ class AIProviderFactory:
                     api_key=settings.openai_api_key,
                     model=settings.openai_model,
                     temperature=0.0,
+                    timeout=settings.ai_request_timeout,
                 )
             elif provider == "gemini":
                 model = ChatGoogleGenerativeAI(
                     google_api_key=settings.google_api_key,
                     model=settings.gemini_model,
                     temperature=0.0,
+                    timeout=settings.ai_request_timeout,
                 )
             else:
                 raise AIProviderError(f"Unsupported provider: {provider}")

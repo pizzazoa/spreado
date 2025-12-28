@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     default_ai_provider: Literal["openai", "gemini"] = "openai"
 
+    # Timeout Configuration (seconds)
+    ai_request_timeout: int = 240  # AI 호출 타임아웃 (4분)
+    request_timeout: int = 300  # 전체 요청 타임아웃 (5분)
+
     # Logging
     log_level: str = "WARNING"
 
