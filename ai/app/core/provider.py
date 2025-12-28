@@ -40,7 +40,7 @@ class AIProviderFactory:
             return model
 
         except Exception as e:
-            raise AIProviderError(f"Failed to initialize {provider} model: {str(e)}")
+            raise AIProviderError(f"Failed to initialize {provider} model: {str(e)}") from e
 
 
 # Global provider factory instance

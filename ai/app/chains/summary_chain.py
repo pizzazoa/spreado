@@ -1,6 +1,7 @@
 """Meeting summary chain using LangChain."""
 
 import json
+import re
 import structlog
 from typing import Dict, Any
 from langchain_core.messages import HumanMessage
@@ -38,13 +39,19 @@ class SummaryChain:
 
             response_text = response_text.strip()
 
+            # JSON 객체 추출 (앞뒤 잡텍스트 제거)
+            # { ... } 또는 [ ... ] 패턴 찾기
+            json_match = re.search(r'(\{.*\}|\[.*\])', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(1)
+
             # JSON 파싱
             data = json.loads(response_text)
             return data
 
         except json.JSONDecodeError as e:
             logger.error("JSON parsing failed", error=str(e), response=response_text[:200])
-            raise ResponseParseError(f"Invalid JSON response: {str(e)}")
+            raise ResponseParseError(f"Invalid JSON response: {str(e)}") from e
 
     def _manual_convert_to_response(self, data: Dict[str, Any]) -> SummaryResponse:
         """
@@ -75,7 +82,7 @@ class SummaryChain:
 
         except Exception as e:
             logger.error("Manual conversion failed", error=str(e), data=data)
-            raise ResponseParseError(f"Failed to convert response: {str(e)}")
+            raise ResponseParseError(f"Failed to convert response: {str(e)}") from e
 
     async def generate_summary(self, request: SummaryRequest) -> SummaryResponse:
         """회의록 요약을 생성합니다."""
