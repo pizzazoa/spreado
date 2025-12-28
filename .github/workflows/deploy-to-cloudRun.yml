@@ -3,6 +3,13 @@ name: Build and Deploy to Cloud Run
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/deploy-to-cloudRun.yml'
   workflow_dispatch:
 
 # 레포 → Settings → Secrets and variables → Actions 에서 설정
