@@ -1,5 +1,4 @@
 import structlog
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -28,18 +27,11 @@ structlog.configure(
 logger = structlog.get_logger()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """애플리케이션 수명 주기 관리."""
-    yield
-
-
 # Create FastAPI application
 app = FastAPI(
     title="AI Summary Service",
     description="회의록 요약을 위한 AI 서비스",
     version="1.0.0",
-    lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
 )
