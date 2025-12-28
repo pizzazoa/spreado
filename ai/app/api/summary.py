@@ -52,14 +52,3 @@ async def create_summary(request: SummaryRequest) -> SummaryResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="요약 생성 중 오류가 발생했습니다."
         )
-
-
-@router.get(
-    "/health",
-    status_code=status.HTTP_200_OK,
-    summary="헬스 체크",
-    description="서비스 상태를 확인합니다.",
-)
-async def health_check():
-    """서비스 헬스 체크 엔드포인트."""
-    return {"status": "healthy", "service": "summary"}
