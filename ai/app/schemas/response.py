@@ -25,9 +25,14 @@ class SummaryResponse(BaseModel):
 
     summary: str = Field(..., description="회의 핵심 요약")
     milestones: List[Milestone] = Field(default_factory=list, description="마일스톤 목록")
-    action_items_by_role: ActionItemsByRole = Field(..., description="역할별 액션 아이템")
+    action_items_by_role: ActionItemsByRole = Field(
+        ...,
+        description="역할별 액션 아이템",
+        serialization_alias="actionItemsByRole"
+    )
 
     class Config:
+        populate_by_name = True
         json_schema_extra = {
             "example": {
                 "summary": "로그인 기능 구현 및 UI 개선에 대한 논의",
@@ -37,7 +42,7 @@ class SummaryResponse(BaseModel):
                         "deadline": "다음 주 금요일"
                     }
                 ],
-                "action_items_by_role": {
+                "actionItemsByRole": {
                     "PM": ["요구사항 문서 작성"],
                     "PD": ["로그인 화면 디자인"],
                     "FE": ["로그인 페이지 구현"],
